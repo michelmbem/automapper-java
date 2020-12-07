@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class Mapping<S, D> {
 	
-	private static final int FLAGS = PropertyHelper.ALL & ~PropertyHelper.STATIC;
+	public static final int FLAGS = PropertyHelper.ALL & ~PropertyHelper.STATIC;
 	
 	private final Class<S> sourceClass;
 	private final Class<D> destClass;
@@ -41,6 +41,25 @@ public class Mapping<S, D> {
 	
 	public Mapping<S, D> constructUsing(Constructor<S, D> constructor) {
 		this.constructor = constructor;
+		return this;
+	}
+	
+	public Mapping<S, D> forAllMembers(MappingAction action) {
+		sourceProperties.clear();
+		destProperties.clear();
+		propertyActions.clear();
+		
+		List<Property> destProps = PropertyHelper.getProperties(destClass, FLAGS);
+		
+		for (Property destProp : destProps) {
+			if (destProp.isWritable()) {
+				Property srcProp = PropertyHelper.getProperty(sourceClass, destProp.getName(), FLAGS);
+				sourceProperties.add(srcProp != null && srcProp.isReadable() ? srcProp : new EmptyProperty());
+				destProperties.add(destProp);
+				propertyActions.put(destProp, action);
+			}
+		}
+		
 		return this;
 	}
 	
