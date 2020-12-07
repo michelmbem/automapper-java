@@ -10,7 +10,7 @@ A Java implementation of the [AutoMapper](https://automapper.org/) utility packa
 
 ## Limitations:
 
-* By the way Java handles generic types, I couldn't figure a way to determine what is the actual type of items in a generic collection. Though, AutoMapper is not able to automatically convert collection's items to the target type. Users should always manually configure that in their profile (which is as simple as appending a *forMember("collection_member", mapTo(DesiredType.class)))* to the invocation of *createMap*.
+* By the way Java handles generic types, I couldn't figure a way to determine what is the actual type of items in a generic collection. Though, AutoMapper is not able to automatically convert collection's items to the target type. Users should always manually configure that in their profile (which is as simple as appending a *.forMember("collection_member", mapTo(DesiredType.class)) to the invocation of createMap)*.
 * AutoMapper uses introspection which makes it slower than [MapStruct](https://mapstruct.org/) for example.
 
 ## Usage:
@@ -54,7 +54,7 @@ A Java implementation of the [AutoMapper](https://automapper.org/) utility packa
                 .forMember("myEntityCollection", mapTo(MyDTO.class));
             createMap(OtherDTO.class, OtherEntity.class);
                 .forMember("id", ignore())
-                .forMember("myDTOCollection", ignore());
+                .forMember("myDTOCollection", mapTo(MyEntity.class));
             
             ...
         }
@@ -114,7 +114,6 @@ A Java implementation of the [AutoMapper](https://automapper.org/) utility packa
         @Override
         public Optional<MyDTO> findById(Integer id) {
             MyEntity entity = dao.findById(id);
-            if (entity == null) return Optional.empty();
             return Optional.ofNullable(mapper.map(entity, MyDTO.class));
         }
 
