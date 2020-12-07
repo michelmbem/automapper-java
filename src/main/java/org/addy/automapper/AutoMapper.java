@@ -31,17 +31,16 @@ public class AutoMapper implements MappingContext {
 		mapping.apply(src, dest, this);
 	}
 
+	@SuppressWarnings("unchecked")
 	public <S, D> D map(S src, Class<D> destClass) {
 		if (src == null) return null;
+
+		Mapping<S, D> mapping = (Mapping<S, D>) profile.getMap(src.getClass(), destClass);
+		if (mapping == null) throw new IllegalArgumentException();
 		
-		try {
-			D dest = destClass.getDeclaredConstructor().newInstance();
-			map(src, dest);
-			return dest;
-		} catch (Exception e) {
-			e.printStackTrace();	// Improve the exception handling here!!
-			return null;
-		}
+		D dest = mapping.construct(src);
+		mapping.apply(src, dest, this);
+		return dest;
 	}
 
 	@SuppressWarnings("unchecked")

@@ -17,9 +17,12 @@ public class Mapping<S, D> {
 	
 	private final Map<Property, MappingAction> propertyActions = new HashMap<>();
 	
+	private Constructor<S, D> constructor;
+	
 	public Mapping(Class<S> sourceClass, Class<D> destClass) {
 		this.sourceClass = sourceClass;
 		this.destClass = destClass;
+		this.constructor = new DefaultConstructor<>(destClass);
 		
 		List<Property> destProps = PropertyHelper.getProperties(destClass, FLAGS);
 		
@@ -34,6 +37,11 @@ public class Mapping<S, D> {
 				}
 			}
 		}
+	}
+	
+	public Mapping<S, D> constructUsing(Constructor<S, D> constructor) {
+		this.constructor = constructor;
+		return this;
 	}
 	
 	public Mapping<S, D> forMember(String memberName, MappingAction action) {
@@ -54,7 +62,11 @@ public class Mapping<S, D> {
 			return this;
 		}
 		
-		throw new IllegalArgumentException("memberName");
+		throw new IllegalArgumentException(memberName);
+	}
+	
+	public D construct(S src) {
+		return constructor.invoke(src);
 	}
 	
 	public void apply(S src, D dest, MappingContext ctx) {
