@@ -42,9 +42,8 @@ public class FieldProperty implements Property {
 	public Object getValue(Object target) {
 		try {
 			return field.get(target);
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-			return null;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -52,8 +51,8 @@ public class FieldProperty implements Property {
 	public void setValue(Object target, Object value) {
 		try {
 			field.set(target, value);
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 

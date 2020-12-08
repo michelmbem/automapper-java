@@ -1,6 +1,5 @@
 package org.addy.automapper;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class MethodProperty implements Property {
@@ -35,6 +34,14 @@ public class MethodProperty implements Property {
 				: getterName.substring(2));
 	}
 
+	public Method getGetter() {
+		return getter;
+	}
+
+	public Method getSetter() {
+		return setter;
+	}
+
 	@Override
 	public Class<?> getType() {
 		return getter != null ? getter.getReturnType() : setter.getParameterTypes()[0];
@@ -59,9 +66,8 @@ public class MethodProperty implements Property {
 	public Object getValue(Object target) {
 		try {
 			return getter.invoke(target);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			e.printStackTrace();
-			return null;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -69,8 +75,8 @@ public class MethodProperty implements Property {
 	public void setValue(Object target, Object value) {
 		try {
 			setter.invoke(target, value);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 

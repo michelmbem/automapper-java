@@ -12,10 +12,8 @@ public class Mapping<S, D> {
 	private final Class<S> sourceClass;
 	private final Class<D> destClass;
 	
-	private final List<Property> sourceProperties = new ArrayList<>();
-	private final List<Property> destProperties = new ArrayList<>();
-	
-	private final Map<Property, MappingAction> propertyActions = new HashMap<>();
+	private final List<Couple<Property, Property>> properties = new ArrayList<>();
+	private final Map<String, MappingAction> propertyActions = new HashMap<>();
 	
 	private Constructor<S, D> constructor;
 	
@@ -25,15 +23,15 @@ public class Mapping<S, D> {
 		this.constructor = new DefaultConstructor<>(destClass);
 		
 		List<Property> destProps = PropertyHelper.getProperties(destClass, FLAGS);
+		MappingAction defaultAction = new CopyAction();
 		
 		for (Property destProp : destProps) {
 			if (destProp.isWritable()) {
 				Property srcProp = PropertyHelper.getProperty(sourceClass, destProp.getName(), FLAGS);
 				
 				if (srcProp != null && srcProp.isReadable()) {
-					sourceProperties.add(srcProp);
-					destProperties.add(destProp);
-					propertyActions.put(destProp, new CopyAction());
+					properties.add(new Couple<>(srcProp, destProp));
+					propertyActions.put(destProp.getName(), defaultAction);
 				}
 			}
 		}
@@ -45,8 +43,7 @@ public class Mapping<S, D> {
 	}
 	
 	public Mapping<S, D> forAllMembers(MappingAction action) {
-		sourceProperties.clear();
-		destProperties.clear();
+		properties.clear();
 		propertyActions.clear();
 		
 		List<Property> destProps = PropertyHelper.getProperties(destClass, FLAGS);
@@ -54,9 +51,9 @@ public class Mapping<S, D> {
 		for (Property destProp : destProps) {
 			if (destProp.isWritable()) {
 				Property srcProp = PropertyHelper.getProperty(sourceClass, destProp.getName(), FLAGS);
-				sourceProperties.add(srcProp != null && srcProp.isReadable() ? srcProp : new EmptyProperty());
-				destProperties.add(destProp);
-				propertyActions.put(destProp, action);
+				if (srcProp == null || !srcProp.isReadable()) srcProp = new EmptyProperty();
+				properties.add(new Couple<>(srcProp, destProp));
+				propertyActions.put(destProp.getName(), action);
 			}
 		}
 		
@@ -64,9 +61,9 @@ public class Mapping<S, D> {
 	}
 	
 	public Mapping<S, D> forMember(String memberName, MappingAction action) {
-		for (Property destProp : destProperties) {
-			if (destProp.getName().equals(memberName)) {
-				propertyActions.put(destProp, action);
+		for (Couple<Property, Property> couple : properties) {
+			if (couple.getSecond().getName().equals(memberName)) {
+				propertyActions.put(memberName, action);
 				return this;
 			}
 		}
@@ -75,9 +72,9 @@ public class Mapping<S, D> {
 		
 		if (destProp != null && destProp.isWritable()) {
 			Property srcProp = PropertyHelper.getProperty(sourceClass, memberName, FLAGS);
-			sourceProperties.add(srcProp != null && srcProp.isReadable() ? srcProp : new EmptyProperty());
-			destProperties.add(destProp);
-			propertyActions.put(destProp, action);
+			if (srcProp == null || !srcProp.isReadable()) srcProp = new EmptyProperty();
+			properties.add(new Couple<>(srcProp, destProp));
+			propertyActions.put(memberName, action);
 			return this;
 		}
 		
@@ -89,11 +86,9 @@ public class Mapping<S, D> {
 	}
 	
 	public void apply(S src, D dest, MappingContext ctx) {
-		int index = 0;
-		for (Property destProp : destProperties) {
-			MappingAction action = propertyActions.get(destProp);
-			action.execute(src, sourceProperties.get(index), dest, destProp, ctx);
-			++index;
+		for (Couple<Property, Property> couple : properties) {
+			MappingAction action = propertyActions.get(couple.getSecond().getName());
+			action.execute(src, couple.getFirst(), dest, couple.getSecond(), ctx);
 		}
 	}
 

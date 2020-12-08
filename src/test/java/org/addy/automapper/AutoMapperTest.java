@@ -1,5 +1,6 @@
 package org.addy.automapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -41,6 +42,7 @@ class AutoMapperTest {
 		assertEquals(p.getAge(), e.getAge());
 		assertEquals(e.getSex(), (byte) 1);
 		assertNotEquals(e.address, p.address);
+		assertThat(e.address).isNull();
 		assertEquals(p.occupation, e.getJobTitle());
 	}
 	
@@ -53,6 +55,13 @@ class AutoMapperTest {
 		assertEquals(p.getAge(), p2.getAge());
 		assertEquals(p.getSex(), p2.getSex());
 		assertEquals(p.address, p2.address);
+		assertEquals(p.occupation, p2.occupation);
+	}
+	
+	@Test
+	void constructorWorks() {
+		String s = mapper.map(p, String.class);
+		assertThat(s).isEqualTo(p.getName());
 	}
 	
 	
@@ -160,6 +169,9 @@ class AutoMapperTest {
 				.forMember("jobTitle", mapFrom("occupation"));
 			
 			createMap(Person.class, Person.class);
+			
+			createMap(Person.class, String.class)
+				.constructUsing(e -> e.getName());
 		}
 		
 	}

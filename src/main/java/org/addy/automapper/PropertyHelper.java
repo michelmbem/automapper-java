@@ -125,7 +125,9 @@ public final class PropertyHelper {
             
             if (getter != null && !matchFlags(getter, flags, clazz)) getter = null;
             if (setter != null && !matchFlags(setter, flags, clazz)) setter = null;
-            if (getter != null || setter != null) return new MethodProperty(getter, setter);
+            
+            if (getter != null || setter != null)
+            	return new MethodProperty(getter, setter);
 		}
 		
 		return null;
@@ -155,10 +157,13 @@ public final class PropertyHelper {
 	}
 
 	private static boolean isGetter(Method method) {
+		String methodName = method.getName();
+		Class<?> returnType = method.getReturnType();
+		
 		return method.getParameterCount() == 0 &&
-				((method.getName().startsWith("get") && method.getReturnType() != Void.TYPE) ||
-				(method.getName().startsWith("is") && method.getReturnType() == Boolean.TYPE) ||
-				(method.getName().startsWith("has") && method.getReturnType() == Boolean.TYPE));
+				((methodName.startsWith("get") && returnType != Void.TYPE) ||
+				(methodName.startsWith("is") && returnType == Boolean.TYPE) ||
+				(methodName.startsWith("has") && returnType == Boolean.TYPE));
 	}
 
 	private static boolean isSetter(Method method) {

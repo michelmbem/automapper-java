@@ -5,25 +5,25 @@ import java.util.Map;
 
 public class Profile {
 	
-	private static final Map<PropertyCacheKey, Property> propertyCache = new HashMap<>();
+	private static final Map<Couple<Class<?>, String>, Property> propertyCache = new HashMap<>();
 	
-	private final Map<CoupleOfTypes, Mapping<?, ?>> mappings = new HashMap<>();
+	private final Map<Couple<Class<?>, Class<?>>, Mapping<?, ?>> mappings = new HashMap<>();
 	
 	public <S, D> Mapping<S, D> createMap(Class<S> sourceClass, Class<D> destClass) {
 		Mapping<S, D> mapping = new Mapping<>(sourceClass, destClass);
-		CoupleOfTypes key = new CoupleOfTypes(sourceClass, destClass);
+		Couple<Class<?>, Class<?>> key = new Couple<>(sourceClass, destClass);
 		mappings.put(key, mapping);
 		return mapping;
 	}
 	
 	public <S, D> boolean hasMap(Class<S> sourceClass, Class<D> destClass) {
-		CoupleOfTypes key = new CoupleOfTypes(sourceClass, destClass);
+		Couple<Class<?>, Class<?>> key = new Couple<>(sourceClass, destClass);
 		return mappings.containsKey(key);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public <S, D> Mapping<S, D> getMap(Class<S> sourceClass, Class<D> destClass) {
-		CoupleOfTypes key = new CoupleOfTypes(sourceClass, destClass);
+		Couple<Class<?>, Class<?>> key = new Couple<>(sourceClass, destClass);
 		return (Mapping<S, D>) mappings.get(key);
 	}
 	
@@ -54,7 +54,7 @@ public class Profile {
 	}
 	
 	private static Property resolveProperty(Class<?> clazz, String propName) {
-		PropertyCacheKey key = new PropertyCacheKey(clazz, propName);
+		Couple<Class<?>, String> key = new Couple<>(clazz, propName);
 		Property prop;
 		
 		if (propertyCache.containsKey(key)) {
