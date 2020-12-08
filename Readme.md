@@ -48,13 +48,19 @@ A Java implementation of the [AutoMapper](https://automapper.org/) utility packa
         public MyProfile() {
             createMap(MyEntity.class, MyDTO.class);
             createMap(MyDTO.class, MyEntity.class)
-                .forMember("id", ignore());
+                .forMember("id", ignore())
+                .forMember("property-that-needs-conversion", convertUsing(original -> transformed))
+                .forMember("property-not-in-source-class", mapFrom("equivalent-property-in-source-class"));
 
             createMap(OtherEntity.class, OtherDTO.class);
                 .forMember("myEntityCollection", mapTo(MyDTO.class));
             createMap(OtherDTO.class, OtherEntity.class);
                 .forMember("id", ignore())
                 .forMember("myDTOCollection", mapTo(MyEntity.class));
+            
+            createMap(ThirdEntity.class, ThirdDTO.class)
+            	.constructUsing(entity -> new ThirdDTO(entity.x, entity.y, ...))
+            	.forAllMembers(ignore());	// the constructor is supposed to do all the mapping!!
             
             ...
         }
