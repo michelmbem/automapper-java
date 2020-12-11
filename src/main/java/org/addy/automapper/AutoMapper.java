@@ -1,5 +1,6 @@
 package org.addy.automapper;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -47,11 +48,11 @@ public class AutoMapper implements MappingContext {
 	public <S, D> D[] map(S[] array, Class<D> destClass) {
 		if (array == null) return null;
 		
-		return (D[]) Stream.of(array)
+		return Stream.of(array)
 				.map(item -> map(item, destClass))
 				.filter(AutoMapper::isNotNull)
 				.collect(Collectors.toList())
-				.toArray();
+				.toArray((D[]) Array.newInstance(destClass, 0));
 	}
 
 	public <S, D> Collection<D> map(Collection<S> collection, Class<D> destClass) {
