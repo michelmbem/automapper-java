@@ -43,13 +43,13 @@ public final class PropertyHelper {
 						
 						if (!matchedNames.contains(propName)) {
 							String setterName = MethodProperty.toSetterName(method.getName());
+							Method setter = null;
 							
 							try {
-								Method setter = clazz.getMethod(setterName, method.getReturnType());
-								props.add(new MethodProperty(method, setter));
+								setter = clazz.getMethod(setterName, method.getReturnType());
 							} catch (NoSuchMethodException | SecurityException e) {
-								props.add(new MethodProperty(method, null));
 							} finally {
+								props.add(new MethodProperty(method, setter));
 								matchedNames.add(propName);
 							}
 						}
@@ -57,8 +57,28 @@ public final class PropertyHelper {
 						String propName = MethodProperty.toPropertyName(method.getName());
 						
 						if (!matchedNames.contains(propName)) {
-							props.add(new MethodProperty(null, method));
-							matchedNames.add(propName);
+							Method getter = null;
+							
+				            try {
+				                getter = clazz.getMethod("get" + propName);
+				            } catch (NoSuchMethodException | SecurityException e1) {
+				                Method tmpGetter = null;
+				                
+				                try {
+				                    tmpGetter = clazz.getMethod("is" + propName);
+				                } catch (NoSuchMethodException | SecurityException e2) {
+				                    try {
+				                        tmpGetter = clazz.getMethod("has" + propName);
+				                    } catch (NoSuchMethodException | SecurityException e3) {
+				                    }
+				                } finally {
+				                    if (tmpGetter != null && tmpGetter.getReturnType() == Boolean.TYPE)
+				                        getter = tmpGetter;
+				                }
+				            } finally {
+								props.add(new MethodProperty(getter, method));
+								matchedNames.add(propName);
+			                }
 						}
 					}
 					
@@ -92,14 +112,15 @@ public final class PropertyHelper {
 
             try {
                 getter = clazz.getMethod("get" + propertyName);
-            } catch (NoSuchMethodException | SecurityException ex1) {
+            } catch (NoSuchMethodException | SecurityException e1) {
                 Method tmpGetter = null;
+                
                 try {
                     tmpGetter = clazz.getMethod("is" + propertyName);
-                } catch (NoSuchMethodException | SecurityException ex2) {
+                } catch (NoSuchMethodException | SecurityException e2) {
                     try {
                         tmpGetter = clazz.getMethod("has" + propertyName);
-                    } catch (NoSuchMethodException | SecurityException ex3) {
+                    } catch (NoSuchMethodException | SecurityException e3) {
                     }
                 } finally {
                     if (tmpGetter != null && tmpGetter.getReturnType() == Boolean.TYPE)
@@ -110,7 +131,7 @@ public final class PropertyHelper {
             if (getter != null) {
                 try {
                     setter = clazz.getMethod("set" + propertyName, getter.getReturnType());
-                } catch (NoSuchMethodException | SecurityException ex1) {
+                } catch (NoSuchMethodException | SecurityException e1) {
                 }
             } else {
             	for (Method method : clazz.getMethods()) {

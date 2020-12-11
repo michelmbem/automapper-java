@@ -127,12 +127,12 @@ class AutoMapperTest {
 			this.jobTitle = jobTitle;
 		}
 
-		public String getName() {
-			return name;
-		}
-
 		public void setName(String name) {
 			this.name = name;
+		}
+
+		public String getName() {
+			return name;
 		}
 
 		public int getAge() {
@@ -143,12 +143,12 @@ class AutoMapperTest {
 			this.age = age;
 		}
 
-		public byte getSex() {
-			return sex;
-		}
-
 		public void setSex(byte sex) {
 			this.sex = sex;
+		}
+
+		public byte getSex() {
+			return sex;
 		}
 
 		public String getJobTitle() {
