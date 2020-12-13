@@ -27,63 +27,11 @@ public final class PropertyHelper {
 		Set<String> matchedNames = new HashSet<>();
 		
 		if ((flags & FIELD) != 0) {
-			for (Field field : clazz.getFields()) {
-				if (matchFlags(field, flags, clazz)) {
-					props.add(new FieldProperty(field));
-					matchedNames.add(field.getName());
-				}
-			}
+			extractFields(clazz, flags, props, matchedNames);
 		}
 		
 		if ((flags & ENCAPSULATED) != 0) {
-			for (Method method : clazz.getMethods()) {
-				if (matchFlags(method, flags, clazz)) {
-					if (isGetter(method)) {
-						String propName = MethodProperty.toPropertyName(method.getName());
-						
-						if (!matchedNames.contains(propName)) {
-							String setterName = MethodProperty.toSetterName(method.getName());
-							Method setter = null;
-							
-							try {
-								setter = clazz.getMethod(setterName, method.getReturnType());
-							} catch (NoSuchMethodException | SecurityException e) {
-							} finally {
-								props.add(new MethodProperty(method, setter));
-								matchedNames.add(propName);
-							}
-						}
-					} else if (isSetter(method)) {
-						String propName = MethodProperty.toPropertyName(method.getName());
-						
-						if (!matchedNames.contains(propName)) {
-							Method getter = null;
-							
-				            try {
-				                getter = clazz.getMethod("get" + propName);
-				            } catch (NoSuchMethodException | SecurityException e1) {
-				                Method tmpGetter = null;
-				                
-				                try {
-				                    tmpGetter = clazz.getMethod("is" + propName);
-				                } catch (NoSuchMethodException | SecurityException e2) {
-				                    try {
-				                        tmpGetter = clazz.getMethod("has" + propName);
-				                    } catch (NoSuchMethodException | SecurityException e3) {
-				                    }
-				                } finally {
-				                    if (tmpGetter != null && tmpGetter.getReturnType() == Boolean.TYPE)
-				                        getter = tmpGetter;
-				                }
-				            } finally {
-								props.add(new MethodProperty(getter, method));
-								matchedNames.add(propName);
-			                }
-						}
-					}
-					
-				}
-			}
+			extractEncapsulatedProps(clazz, flags, props, matchedNames);
 		}
 		
 		return props;
@@ -95,54 +43,17 @@ public final class PropertyHelper {
 	
 	public static Property getProperty(Class<?> clazz, String name, int flags) {
 		if ((flags & FIELD) != 0) {
-			try {
-				Field field = clazz.getField(name);
-				if (matchFlags(field, flags, clazz))
-					return new FieldProperty(field);
-			} catch (NoSuchFieldException | SecurityException e) {
-			}
+			Field field = findField(clazz, name, flags);
+			if (field != null) return new FieldProperty(field);
 		}
 		
 		if ((flags & ENCAPSULATED) != 0) {
-			Method getter = null;
-			Method setter = null;
 			String propertyName = name.length() == 1
 					? name.toUpperCase()
 					: name.substring(0, 1).toUpperCase() + name.substring(1); // pascalCase(name)
-
-            try {
-                getter = clazz.getMethod("get" + propertyName);
-            } catch (NoSuchMethodException | SecurityException e1) {
-                Method tmpGetter = null;
-                
-                try {
-                    tmpGetter = clazz.getMethod("is" + propertyName);
-                } catch (NoSuchMethodException | SecurityException e2) {
-                    try {
-                        tmpGetter = clazz.getMethod("has" + propertyName);
-                    } catch (NoSuchMethodException | SecurityException e3) {
-                    }
-                } finally {
-                    if (tmpGetter != null && tmpGetter.getReturnType() == Boolean.TYPE)
-                        getter = tmpGetter;
-                }
-            }
-
-            if (getter != null) {
-                try {
-                    setter = clazz.getMethod("set" + propertyName, getter.getReturnType());
-                } catch (NoSuchMethodException | SecurityException e1) {
-                }
-            } else {
-            	for (Method method : clazz.getMethods()) {
-            		if (method.getParameterCount() == 1 &&
-            				method.getReturnType() == Void.TYPE &&
-            				method.getName().equals("set" + propertyName)) {
-            			setter = method;
-            			break;
-            		}
-            	}
-            }
+					
+			Method getter = findGetter(clazz, propertyName);
+			Method setter = findSetter(clazz, propertyName, getter);
             
             if (getter != null && !matchFlags(getter, flags, clazz)) getter = null;
             if (setter != null && !matchFlags(setter, flags, clazz)) setter = null;
@@ -177,6 +88,28 @@ public final class PropertyHelper {
 		return match;
 	}
 
+	private static void extractFields(Class<?> clazz, int flags, List<Property> properties, Set<String> matchedNames) {
+		for (Field field : clazz.getFields()) {
+			if (matchFlags(field, flags, clazz)) {
+				properties.add(new FieldProperty(field));
+				matchedNames.add(field.getName());
+			}
+		}
+	}
+
+	private static void extractEncapsulatedProps(Class<?> clazz, int flags, List<Property> properties, Set<String> matchedNames) {
+		for (Method method : clazz.getMethods()) {
+			if (matchFlags(method, flags, clazz)) {
+				if (isGetter(method)) {
+					extractGetterFirst(method, clazz, properties, matchedNames);
+				} else if (isSetter(method)) {
+					extractSetterFirst(method, clazz, properties, matchedNames);
+				}
+				
+			}
+		}
+	}
+
 	private static boolean isGetter(Method method) {
 		String methodName = method.getName();
 		Class<?> returnType = method.getReturnType();
@@ -191,6 +124,108 @@ public final class PropertyHelper {
 		return method.getParameterCount() == 1 &&
 				method.getReturnType() == Void.TYPE &&
 				method.getName().startsWith("set");
+	}
+
+	private static void extractGetterFirst(Method getter, Class<?> clazz, List<Property> properties, Set<String> matchedNames) {
+		String propName = MethodProperty.toPropertyName(getter.getName());
+		
+		if (!matchedNames.contains(propName)) {
+			String setterName = MethodProperty.toSetterName(getter.getName());
+			Method setter = null;
+			
+			try {
+				setter = clazz.getMethod(setterName, getter.getReturnType());
+			} catch (NoSuchMethodException | SecurityException e) {
+			} finally {
+				properties.add(new MethodProperty(getter, setter));
+				matchedNames.add(propName);
+			}
+		}
+	}
+
+	private static void extractSetterFirst(Method setter, Class<?> clazz, List<Property> properties, Set<String> matchedNames) {
+		String propName = MethodProperty.toPropertyName(setter.getName());
+		
+		if (!matchedNames.contains(propName)) {
+			Method getter = null;
+			
+		    try {
+		        getter = clazz.getMethod("get" + propName);
+		    } catch (NoSuchMethodException | SecurityException e1) {
+		        Method tmpGetter = null;
+		        
+		        try {
+		            tmpGetter = clazz.getMethod("is" + propName);
+		        } catch (NoSuchMethodException | SecurityException e2) {
+		            try {
+		                tmpGetter = clazz.getMethod("has" + propName);
+		            } catch (NoSuchMethodException | SecurityException e3) {
+		            }
+		        } finally {
+		            if (tmpGetter != null && tmpGetter.getReturnType() == Boolean.TYPE)
+		                getter = tmpGetter;
+		        }
+		    } finally {
+				properties.add(new MethodProperty(getter, setter));
+				matchedNames.add(propName);
+		    }
+		}
+	}
+
+	private static Field findField(Class<?> clazz, String name, int flags) {
+		try {
+			Field field = clazz.getField(name);
+			if (matchFlags(field, flags, clazz)) return field;
+		} catch (NoSuchFieldException | SecurityException e) {
+		}
+		
+		return null;
+	}
+
+	private static Method findGetter(Class<?> clazz, String propertyName) {
+		Method getter = null;
+		
+		try {
+		    getter = clazz.getMethod("get" + propertyName);
+		} catch (NoSuchMethodException | SecurityException e1) {
+		    Method tmpGetter = null;
+		    
+		    try {
+		        tmpGetter = clazz.getMethod("is" + propertyName);
+		    } catch (NoSuchMethodException | SecurityException e2) {
+		        try {
+		            tmpGetter = clazz.getMethod("has" + propertyName);
+		        } catch (NoSuchMethodException | SecurityException e3) {
+		        }
+		    } finally {
+		        if (tmpGetter != null && tmpGetter.getReturnType() == Boolean.TYPE)
+		            getter = tmpGetter;
+		    }
+		}
+		
+		return getter;
+	}
+
+	private static Method findSetter(Class<?> clazz, String propertyName, Method getter) {
+		Method setter = null;
+		
+		if (getter != null) {
+		    try {
+		        setter = clazz.getMethod("set" + propertyName, getter.getReturnType());
+		    } catch (NoSuchMethodException | SecurityException e1) {
+		    }
+		} else {
+			for (Method method : clazz.getMethods()) {
+				if (method.getParameterCount() == 1 &&
+						method.getReturnType() == Void.TYPE &&
+						method.getName().equals("set" + propertyName)) {
+					setter = method;
+					break;
+				}
+			}
+		}
+		
+		return setter;
 	}
 
 }
