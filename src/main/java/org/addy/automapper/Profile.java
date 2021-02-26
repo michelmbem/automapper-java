@@ -18,7 +18,11 @@ public class Profile {
 	
 	public <S, D> boolean hasMap(Class<S> sourceClass, Class<D> destClass) {
 		Couple<Class<?>, Class<?>> key = new Couple<>(sourceClass, destClass);
-		return mappings.containsKey(key);
+		return mappings.containsKey(key) ||
+				mappings.keySet().stream().anyMatch(couple ->
+					sourceClass.isAssignableFrom(couple.getFirst()) &&
+					destClass.isAssignableFrom(couple.getSecond())
+				);
 	}
 	
 	@SuppressWarnings("unchecked")
