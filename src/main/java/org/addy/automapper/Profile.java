@@ -24,7 +24,20 @@ public class Profile {
 	@SuppressWarnings("unchecked")
 	public <S, D> Mapping<S, D> getMap(Class<S> sourceClass, Class<D> destClass) {
 		Couple<Class<?>, Class<?>> key = new Couple<>(sourceClass, destClass);
-		return (Mapping<S, D>) mappings.get(key);
+		Mapping<?, ?> mapping = mappings.get(key);
+		
+		if (mapping == null) {
+			for (Couple<Class<?>, Class<?>> couple : mappings.keySet()) {
+				if (sourceClass.isAssignableFrom(couple.getFirst()) &&
+						destClass.isAssignableFrom(couple.getSecond())) {
+					
+					mapping = mappings.get(couple);
+					break;
+				}
+			}
+		}
+		
+		return (Mapping<S, D>) mapping;
 	}
 	
 	public static MappingAction ignore() {
