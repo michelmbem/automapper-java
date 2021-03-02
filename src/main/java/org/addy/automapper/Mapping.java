@@ -26,7 +26,7 @@ public class Mapping<S, D> {
 		MappingAction defaultAction = new CopyAction();
 		
 		for (Property destProp : destProps) {
-			if (destProp.isWritable()) {
+			if (destProp.isWritable() && !destProp.isCollection()) {
 				Property srcProp = PropertyHelper.getProperty(sourceClass, destProp.getName(), FLAGS);
 				
 				if (srcProp != null && srcProp.isReadable()) {
@@ -36,7 +36,7 @@ public class Mapping<S, D> {
 			}
 		}
 	}
-	
+
 	public Mapping<S, D> constructUsing(Constructor<S, D> constructor) {
 		this.constructor = constructor;
 		return this;
