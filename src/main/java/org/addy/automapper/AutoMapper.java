@@ -28,7 +28,10 @@ public class AutoMapper implements MappingContext {
 	@SuppressWarnings("unchecked")
 	public <S, D> void map(S src, D dest) {
 		Mapping<S, D> mapping = (Mapping<S, D>) profile.getMap(src.getClass(), dest.getClass());
-		if (mapping == null) throw new IllegalArgumentException();
+		if (mapping == null) {
+			throw new IllegalStateException("No mapping found for " + src.getClass().getName() + " and " + dest.getClass().getName());
+		}
+		
 		mapping.apply(src, dest, this);
 	}
 
@@ -37,7 +40,9 @@ public class AutoMapper implements MappingContext {
 		if (src == null) return null;
 
 		Mapping<S, D> mapping = (Mapping<S, D>) profile.getMap(src.getClass(), destClass);
-		if (mapping == null) throw new IllegalArgumentException();
+		if (mapping == null) {
+			throw new IllegalStateException("No mapping found for " + src.getClass().getName() + " and " + destClass.getName());
+		}
 		
 		D dest = mapping.construct(src);
 		mapping.apply(src, dest, this);

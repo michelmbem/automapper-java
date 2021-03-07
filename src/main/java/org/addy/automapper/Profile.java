@@ -53,7 +53,10 @@ public class Profile {
 	public static MappingAction mapFrom(String propName) {
 		return (src, srcProp, dest, destProp, ctx) -> {
 			Property prop = resolveProperty(src.getClass(), propName);
-			if (prop == null) throw new IllegalArgumentException(propName);
+			if (prop == null) {
+				throw new IllegalArgumentException("There is no " + propName + " property in class " + src.getClass().getName());
+			}
+			
 			CopyAction.copyValue(src, prop, dest, destProp, ctx);
 		};
 	}
