@@ -29,7 +29,7 @@ A Java implementation of the [AutoMapper](https://automapper.org/) utility packa
     <dependency>
         <groupId>org.addy</groupId>
         <artifactId>automapper</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </dependency>
     ````
 
@@ -89,7 +89,7 @@ A Java implementation of the [AutoMapper](https://automapper.org/) utility packa
 
     ````
 
-    **N.B.:** the above example assumes you are using CDI. In a Spring-based application you should replace the *@Produce* annotation by a *@Bean* annotation.
+    **N.B.:** the above example assumes you are using CDI. In a Spring-based application you should replace the *@Produce* annotation by a *@Bean* annotation and decorate de declaring class with a *@Configuration* annotation.
 
 6. Start injecting AutoMapper in your beans
 
@@ -132,7 +132,7 @@ A Java implementation of the [AutoMapper](https://automapper.org/) utility packa
 
         @Override
         public void update(Integer id, MyDTO dto) {
-            MyEntity entity = dto.findById(id);
+            MyEntity entity = dao.findById(id);
             // Handle this in the web layer and return a 404 response
             if (entity == null) throw new EntityNotFoundException(MyEntity.class, id);
             mapper.map(dto, entity); // Properties copy
@@ -142,7 +142,7 @@ A Java implementation of the [AutoMapper](https://automapper.org/) utility packa
 
         @Override
         public void delete(Integer id) {
-            MyEntity entity = dto.findById(id);
+            MyEntity entity = dao.findById(id);
             // Handle this in the web layer and return a 404 response
             if (entity == null) throw new EntityNotFoundException(MyEntity.class, id);
             dao.delete(entity);
