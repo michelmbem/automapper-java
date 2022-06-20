@@ -89,7 +89,7 @@ A Java implementation of the [AutoMapper](https://automapper.org/) utility packa
 
     ````
 
-    **N.B.:** the above example assumes you are using CDI. In a Spring-based application you should replace the *@Produce* annotation by a *@Bean* annotation and decorate de declaring class with a *@Configuration* annotation.
+    **N.B.:** the above example assumes you are using CDI. In a Spring-based application you should replace the *@Produce* annotation by a *@Bean* annotation and decorate the declaring class with a *@Configuration* annotation.
 
 6. Start injecting AutoMapper in your beans
 
