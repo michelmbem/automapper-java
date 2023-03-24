@@ -83,6 +83,12 @@ public class Profile {
 			destProp.setValue(dest, converter.convert((T) prop.getValue(src)));
 		};
 	}
+
+	public static <T, U> MappingAction generateUsing(Converter<T, U> converter) {
+		return (src, srcProp, dest, destProp, ctx) -> {
+			destProp.setValue(dest, converter.convert((T) src));
+		};
+	}
 	
 	private static Property resolveProperty(Class<?> clazz, String propName) {
 		Couple<Class<?>, String> key = new Couple<>(clazz, propName);
