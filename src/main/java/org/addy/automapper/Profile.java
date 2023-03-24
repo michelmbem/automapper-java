@@ -67,20 +67,20 @@ public class Profile {
 		};
 	}
 	
-	public static MappingAction convertUsing(Converter converter) {
+	public static <T, U> MappingAction convertUsing(Converter<T, U> converter) {
 		return (src, srcProp, dest, destProp, ctx) -> {
-			destProp.setValue(dest, converter.convert(srcProp.getValue(src)));
+			destProp.setValue(dest, converter.convert((T) srcProp.getValue(src)));
 		};
 	}
 
-	public static MappingAction convertFromUsing(String propName, Converter converter) {
+	public static <T, U> MappingAction convertFromUsing(String propName, Converter<T, U> converter) {
 		return (src, srcProp, dest, destProp, ctx) -> {
 			Property prop = resolveProperty(src.getClass(), propName);
 			if (prop == null) {
 				throw new IllegalArgumentException("There is no " + propName + " property in class " + src.getClass().getName());
 			}
 
-			destProp.setValue(dest, converter.convert(prop.getValue(src)));
+			destProp.setValue(dest, converter.convert((T) prop.getValue(src)));
 		};
 	}
 	
