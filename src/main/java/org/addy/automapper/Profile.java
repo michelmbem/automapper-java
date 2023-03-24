@@ -72,6 +72,17 @@ public class Profile {
 			destProp.setValue(dest, converter.convert(srcProp.getValue(src)));
 		};
 	}
+
+	public static MappingAction convertFromUsing(String propName, Converter converter) {
+		return (src, srcProp, dest, destProp, ctx) -> {
+			Property prop = resolveProperty(src.getClass(), propName);
+			if (prop == null) {
+				throw new IllegalArgumentException("There is no " + propName + " property in class " + src.getClass().getName());
+			}
+
+			destProp.setValue(dest, converter.convert(prop.getValue(src)));
+		};
+	}
 	
 	private static Property resolveProperty(Class<?> clazz, String propName) {
 		Couple<Class<?>, String> key = new Couple<>(clazz, propName);
