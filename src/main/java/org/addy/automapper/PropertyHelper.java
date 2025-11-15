@@ -105,7 +105,6 @@ public final class PropertyHelper {
 				} else if (isSetter(method)) {
 					extractSetterFirst(method, clazz, properties, matchedNames);
 				}
-				
 			}
 		}
 	}
