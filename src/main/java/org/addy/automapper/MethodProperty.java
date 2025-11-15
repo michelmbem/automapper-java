@@ -16,22 +16,17 @@ public class MethodProperty implements Property {
 	}
 	
 	public static String toPropertyName(String methodName) {
-		String propertyName;
-		
-		if (methodName.startsWith("get") || methodName.startsWith("has") || methodName.startsWith("set"))
-			propertyName = methodName.substring(3);
-		else	// methodName startsWith "is"
-			propertyName = methodName.substring(2);
-		
-		return propertyName.length() == 1
+		String propertyName = methodName.startsWith("is")
+                ? methodName.substring(2)
+                : methodName.substring(3); // methodName startsWith "get" or "has" or "set"
+
+        return propertyName.length() == 1
 				? propertyName.toLowerCase()
 				: propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1); // camelCase(propertyName)
 	}
 	
 	public static String toSetterName(String getterName) {
-		return "set" + ((getterName.startsWith("get") || getterName.startsWith("has"))
-				? getterName.substring(3)
-				: getterName.substring(2));
+		return "set" + getterName.substring(getterName.startsWith("is") ? 2 : 3);
 	}
 
 	public Method getGetter() {
