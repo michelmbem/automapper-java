@@ -40,8 +40,8 @@ class AutoMapperTest {
 		
 		assertEquals(p.getName(), e.getName());
 		assertEquals(p.getAge(), e.getAge());
-		assertEquals(e.getSex(), (byte) 1);
-		assertNotEquals(e.address, p.address);
+		assertEquals((byte) 1, e.getSex());
+		assertNotEquals(p.address, e.address);
 		assertThat(e.address).isNull();
 		assertEquals(p.occupation, e.getJobTitle());
 	}
