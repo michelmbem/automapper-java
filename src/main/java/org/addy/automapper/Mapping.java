@@ -62,7 +62,7 @@ public class Mapping<S, D> {
 	
 	public Mapping<S, D> forMember(String memberName, MappingAction action) {
 		for (Couple<Property, Property> couple : properties) {
-			if (couple.getSecond().getName().equals(memberName)) {
+			if (couple.second().getName().equals(memberName)) {
 				propertyActions.put(memberName, action);
 				return this;
 			}
@@ -87,8 +87,8 @@ public class Mapping<S, D> {
 	
 	public void apply(S src, D dest, MappingContext ctx) {
 		for (Couple<Property, Property> couple : properties) {
-			MappingAction action = propertyActions.get(couple.getSecond().getName());
-			action.execute(src, couple.getFirst(), dest, couple.getSecond(), ctx);
+			MappingAction action = propertyActions.get(couple.second().getName());
+			action.execute(src, couple.first(), dest, couple.second(), ctx);
 		}
 	}
 

@@ -20,8 +20,8 @@ public class Profile {
 		Couple<Class<?>, Class<?>> key = new Couple<>(sourceClass, destClass);
 		return mappings.containsKey(key) ||
 				mappings.keySet().stream().anyMatch(couple ->
-					sourceClass.isAssignableFrom(couple.getFirst()) &&
-					destClass.isAssignableFrom(couple.getSecond())
+					sourceClass.isAssignableFrom(couple.first()) &&
+					destClass.isAssignableFrom(couple.second())
 				);
 	}
 	
@@ -32,8 +32,8 @@ public class Profile {
 		
 		if (mapping == null) {
 			for (Couple<Class<?>, Class<?>> couple : mappings.keySet()) {
-				if (sourceClass.isAssignableFrom(couple.getFirst()) &&
-						destClass.isAssignableFrom(couple.getSecond())) {
+				if (sourceClass.isAssignableFrom(couple.first()) &&
+						destClass.isAssignableFrom(couple.second())) {
 					
 					mapping = mappings.get(couple);
 					break;

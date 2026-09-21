@@ -29,6 +29,7 @@ public class EmptyProperty implements Property {
 
 	@Override
 	public void setValue(Object target, Object value) {
+		// Does nothing
 	}
 
 }
