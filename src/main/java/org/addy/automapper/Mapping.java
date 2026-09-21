@@ -20,7 +20,9 @@ public class Mapping<S, D> {
 	public Mapping(Class<S> sourceClass, Class<D> destClass) {
 		this.sourceClass = sourceClass;
 		this.destClass = destClass;
-		this.constructor = new DefaultConstructor<>(destClass);
+		this.constructor = destClass.isRecord()
+				? new RecordConstructor<>(sourceClass, destClass)
+				: new DefaultConstructor<>(destClass);
 		
 		List<Property> destProps = PropertyHelper.getProperties(destClass, FLAGS);
 		MappingAction defaultAction = new CopyAction();

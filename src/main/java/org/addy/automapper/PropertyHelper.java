@@ -1,9 +1,6 @@
 package org.addy.automapper;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,25 +45,44 @@ public final class PropertyHelper {
 		}
 		
 		if ((flags & ENCAPSULATED) != 0) {
-			String propertyName = name.length() == 1
-					? name.toUpperCase()
-					: name.substring(0, 1).toUpperCase() + name.substring(1); // pascalCase(name)
-					
-			Method getter = findGetter(clazz, propertyName);
-			Method setter = findSetter(clazz, propertyName, getter);
-            
-            if (getter != null && !matchFlags(getter, flags, clazz)) getter = null;
-            if (setter != null && !matchFlags(setter, flags, clazz)) setter = null;
-            
-            if (getter != null || setter != null)
-            	return new MethodProperty(getter, setter);
-		}
+            return clazz.isRecord()
+					? recordProperty(clazz, name, flags)
+					: standardProperty(clazz, name, flags);
+        }
 		
 		return null;
 	}
-	
+
 	public static Property getProperty(Class<?> clazz, String name) {
 		return getProperty(clazz, name, ALL);
+	}
+
+	private static Property recordProperty(Class<?> clazz, String name, int flags) {
+        try {
+            Method accessor = clazz.getMethod(name);
+			return matchFlags(accessor, flags, clazz)
+					? new MethodProperty(accessor, null, true)
+					: null;
+        } catch (NoSuchMethodException e) {
+			return null;
+        }
+    }
+
+	private static Property standardProperty(Class<?> clazz, String name, int flags) {
+		String propertyName = name.length() == 1
+				? name.toUpperCase()
+				: name.substring(0, 1).toUpperCase() + name.substring(1); // pascalCase(name)
+
+		Method getter = findGetter(clazz, propertyName);
+		Method setter = findSetter(clazz, propertyName, getter);
+
+		if (getter != null && !matchFlags(getter, flags, clazz)) getter = null;
+		if (setter != null && !matchFlags(setter, flags, clazz)) setter = null;
+
+		if (getter != null || setter != null)
+			return new MethodProperty(getter, setter, false);
+
+		return null;
 	}
 	
 	private static boolean matchFlags(Member member, int flags, Class<?> clazz) {
@@ -98,6 +114,23 @@ public final class PropertyHelper {
 	}
 
 	private static void extractEncapsulatedProps(Class<?> clazz, int flags, List<Property> properties, Set<String> matchedNames) {
+		if (clazz.isRecord())
+			extractRecordProperties(clazz, flags, properties, matchedNames);
+		else
+			extractStandardProperties(clazz, flags, properties, matchedNames);
+	}
+
+    private static void extractRecordProperties(Class<?> clazz, int flags, List<Property> properties, Set<String> matchedNames) {
+		for (RecordComponent component : clazz.getRecordComponents()) {
+			Method accessor = component.getAccessor();
+			if (matchFlags(accessor, flags, clazz)) {
+				properties.add(new MethodProperty(accessor, null, true));
+				matchedNames.add(component.getName());
+			}
+		}
+    }
+
+	private static void extractStandardProperties(Class<?> clazz, int flags, List<Property> properties, Set<String> matchedNames) {
 		for (Method method : clazz.getMethods()) {
 			if (matchFlags(method, flags, clazz)) {
 				if (isGetter(method)) {
@@ -107,7 +140,7 @@ public final class PropertyHelper {
 				}
 			}
 		}
-	}
+    }
 
 	private static boolean isGetter(Method method) {
 		String methodName = method.getName();
@@ -126,24 +159,24 @@ public final class PropertyHelper {
 	}
 
 	private static void extractGetterFirst(Method getter, Class<?> clazz, List<Property> properties, Set<String> matchedNames) {
-		String propName = MethodProperty.toPropertyName(getter.getName());
+		String propName = MethodProperty.toPropertyName(getter.getName(), false);
 		
 		if (!matchedNames.contains(propName)) {
-			String setterName = MethodProperty.toSetterName(getter.getName());
+			String setterName = MethodProperty.toSetterName(getter.getName(), false);
 			Method setter = null;
 			
 			try {
 				setter = clazz.getMethod(setterName, getter.getReturnType());
 			} catch (NoSuchMethodException | SecurityException e) {
 			} finally {
-				properties.add(new MethodProperty(getter, setter));
+				properties.add(new MethodProperty(getter, setter, false));
 				matchedNames.add(propName);
 			}
 		}
 	}
 
 	private static void extractSetterFirst(Method setter, Class<?> clazz, List<Property> properties, Set<String> matchedNames) {
-		String propName = MethodProperty.toPropertyName(setter.getName());
+		String propName = MethodProperty.toPropertyName(setter.getName(), false);
 		
 		if (!matchedNames.contains(propName)) {
 			Method getter = null;
@@ -165,7 +198,7 @@ public final class PropertyHelper {
 		                getter = tmpGetter;
 		        }
 		    } finally {
-				properties.add(new MethodProperty(getter, setter));
+				properties.add(new MethodProperty(getter, setter, false));
 				matchedNames.add(propName);
 		    }
 		}

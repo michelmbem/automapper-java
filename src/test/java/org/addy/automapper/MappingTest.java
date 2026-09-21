@@ -9,7 +9,7 @@ class MappingTest {
 	
 	@Test
 	void applyWorks() {
-		Person p = new Person("Michel Mbem", 43, 'M', "2105 Rue Tupper, MTL, QC, CAN");
+		Person p = new Person("Jordan Mbem", 10, 'M', "2105 Rue Tupper, MTL, QC, CAN");
 		Employee e = new Employee();
 		
 		Mapping<Person, Employee> mapping = new Mapping<>(Person.class, Employee.class)
@@ -18,10 +18,22 @@ class MappingTest {
 		
 		mapping.apply(p, e, null);
 		
-		assertEquals(p.getName(), e.getName());
-		assertEquals(p.getAge(), e.getAge());
-		assertEquals(e.getSex(), (byte) 1);
+		assertEquals(e.getName(), p.getName());
+		assertEquals(e.getAge(), p.getAge());
+		assertEquals((byte) 1, e.getSex());
 		assertNotEquals(e.address, p.address);
+	}
+
+	@Test
+	void constructWorksWithRecords() {
+		Person p1 = new Person("Daniel Mbem", 10, 'M', "2105 Rue Tupper, MTL, QC, CAN");
+		Mapping<Person, Patient> mapping = new Mapping<>(Person.class, Patient.class);
+		Patient p2 = mapping.construct(p1);
+
+		assertEquals(p2.name(), p1.getName());
+		assertEquals(p2.age(), p1.getAge());
+		assertEquals(p2.sex(), p1.getSex());
+		assertEquals(p2.address(), p1.address);
 	}
 	
 	
@@ -117,5 +129,7 @@ class MappingTest {
 			this.jobTitle = jobTitle;
 		}
 	}
+
+	record Patient(String name, int age, char sex, String address) {}
 
 }
