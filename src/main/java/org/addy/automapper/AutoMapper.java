@@ -1,12 +1,7 @@
 package org.addy.automapper;
 
 import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,14 +15,10 @@ public class AutoMapper implements MappingContext {
 		
 		this.profile = profile;
 	}
-	
-	protected static <T> boolean isNotNull(T value) {
-		return value != null;
-	}
 
 	@SuppressWarnings("unchecked")
 	public <S, D> void map(S src, D dest) {
-		Mapping<S, D> mapping = (Mapping<S, D>) profile.getMap(src.getClass(), dest.getClass());
+		var mapping = (Mapping<S, D>) profile.getMap(src.getClass(), dest.getClass());
 		if (mapping == null) {
 			throw new IllegalStateException("No mapping found for " + src.getClass().getName() + " and " + dest.getClass().getName());
 		}
@@ -39,7 +30,7 @@ public class AutoMapper implements MappingContext {
 	public <S, D> D map(S src, Class<D> destClass) {
 		if (src == null) return null;
 
-		Mapping<S, D> mapping = (Mapping<S, D>) profile.getMap(src.getClass(), destClass);
+		var mapping = (Mapping<S, D>) profile.getMap(src.getClass(), destClass);
 		if (mapping == null) {
 			throw new IllegalStateException("No mapping found for " + src.getClass().getName() + " and " + destClass.getName());
 		}
@@ -55,9 +46,8 @@ public class AutoMapper implements MappingContext {
 		
 		return Stream.of(array)
 				.map(item -> map(item, destClass))
-				.filter(AutoMapper::isNotNull)
-				.collect(Collectors.toList())
-				.toArray((D[]) Array.newInstance(destClass, 0));
+				.filter(Objects::nonNull)
+				.toArray(n -> (D[]) Array.newInstance(destClass, n));
 	}
 
 	public <S, D> Collection<D> map(Collection<S> collection, Class<D> destClass) {
@@ -65,7 +55,7 @@ public class AutoMapper implements MappingContext {
 		
 		return collection.stream()
 				.map(item -> map(item, destClass))
-				.filter(AutoMapper::isNotNull)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toCollection(LinkedList::new));
 	}
 
@@ -74,8 +64,8 @@ public class AutoMapper implements MappingContext {
 		
 		return list.stream()
 				.map(item -> map(item, destClass))
-				.filter(AutoMapper::isNotNull)
-				.collect(Collectors.toList());
+				.filter(Objects::nonNull)
+				.toList();
 	}
 
 	public <S, D> Set<D> map(Set<S> set, Class<D> destClass) {
@@ -83,7 +73,7 @@ public class AutoMapper implements MappingContext {
 		
 		return set.stream()
 				.map(item -> map(item, destClass))
-				.filter(AutoMapper::isNotNull)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 	}
 
@@ -107,10 +97,10 @@ public class AutoMapper implements MappingContext {
 	@Override
 	public Object doMap(Object src, Class<?> destClass) {
 		if (src == null) return null;
-		if (src instanceof Map<?, ?>) return map((Map<?, ?>) src, destClass);
-		if (src instanceof Set<?>) return map((Set<?>) src, destClass);
-		if (src instanceof List<?>) return map((List<?>) src, destClass);
-		if (src instanceof Collection<?>) return map((Collection<?>) src, destClass);
+		if (src instanceof Map<?, ?> dict) return map(dict, destClass);
+		if (src instanceof Set<?> set) return map(set, destClass);
+		if (src instanceof List<?> list) return map(list, destClass);
+		if (src instanceof Collection<?> col) return map(col, destClass);
 		if (src.getClass().isArray()) return map((Object[]) src, destClass);
 		return map(src, destClass);
 	}

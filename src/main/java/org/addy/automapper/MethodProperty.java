@@ -3,31 +3,37 @@ package org.addy.automapper;
 import java.lang.reflect.Method;
 
 public class MethodProperty implements Property {
-	
+
+	private final String name;
 	private final Method getter;
 	private final Method setter;
-	private final boolean fluentNaming;
-	
-	public MethodProperty(Method getter, Method setter, boolean fluentNaming) {
+
+	public MethodProperty(Method getter, Method setter) {
 		if (getter == null && setter == null)
 			throw new IllegalArgumentException("Both getter and setter cannot be null");
-		
+
+		name = toPropertyName(getter != null ? getter.getName() : setter.getName());
 		this.getter = getter;
 		this.setter = setter;
-		this.fluentNaming = fluentNaming;
+	}
+
+	public MethodProperty(Method accessor) {
+		if (accessor == null)
+			throw new IllegalArgumentException("accessor cannot be null");
+
+		name = accessor.getName();
+		getter = accessor;
+		setter = null;
 	}
 	
-	public static String toPropertyName(String methodName, boolean fluentNaming) {
-		if (fluentNaming) return methodName;
-
+	public static String toPropertyName(String methodName) {
 		String propertyName = methodName.substring(methodName.startsWith("is") ? 2 : 3);
         return propertyName.length() == 1
 				? propertyName.toLowerCase()
 				: propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1); // camelCase(propertyName)
 	}
 	
-	public static String toSetterName(String getterName, boolean fluentNaming) {
-        if (fluentNaming) return getterName;
+	public static String toSetterName(String getterName) {
         return "set" + getterName.substring(getterName.startsWith("is") ? 2 : 3);
     }
 
@@ -46,7 +52,7 @@ public class MethodProperty implements Property {
 
 	@Override
 	public String getName() {
-		return toPropertyName(getter != null ? getter.getName() : setter.getName(), fluentNaming);
+		return name;
 	}
 
 	@Override

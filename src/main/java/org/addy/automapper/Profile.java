@@ -31,11 +31,11 @@ public class Profile {
 		Mapping<?, ?> mapping = mappings.get(key);
 		
 		if (mapping == null) {
-			for (Couple<Class<?>, Class<?>> couple : mappings.keySet()) {
+			for (var entry : mappings.entrySet()) {
+				Couple<Class<?>, Class<?>> couple = entry.getKey();
 				if (sourceClass.isAssignableFrom(couple.first()) &&
 						destClass.isAssignableFrom(couple.second())) {
-					
-					mapping = mappings.get(couple);
+					mapping = entry.getValue();
 					break;
 				}
 			}
