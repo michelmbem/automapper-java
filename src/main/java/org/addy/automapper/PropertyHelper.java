@@ -28,7 +28,10 @@ public final class PropertyHelper {
 		}
 		
 		if ((flags & ENCAPSULATED) != 0) {
-			extractEncapsulatedProps(clazz, flags, props, matchedNames);
+			if (clazz.isRecord())
+				extractRecordComponents(clazz, props, matchedNames);
+			else
+				extractEncapsulatedProps(clazz, flags, props, matchedNames);
 		}
 		
 		return props;
@@ -46,8 +49,8 @@ public final class PropertyHelper {
 		
 		if ((flags & ENCAPSULATED) != 0) {
             return clazz.isRecord()
-					? recordProperty(clazz, name, flags)
-					: standardProperty(clazz, name, flags);
+					? getRecordComponent(clazz, name)
+					: getEncapsulatedProp(clazz, name, flags);
         }
 		
 		return null;
@@ -57,18 +60,16 @@ public final class PropertyHelper {
 		return getProperty(clazz, name, ALL);
 	}
 
-	private static Property recordProperty(Class<?> clazz, String name, int flags) {
+	private static Property getRecordComponent(Class<?> clazz, String name) {
         try {
             Method accessor = clazz.getMethod(name);
-			return matchFlags(accessor, flags, clazz)
-					? new MethodProperty(accessor, null, true)
-					: null;
+			return new MethodProperty(accessor, null, true);
         } catch (NoSuchMethodException e) {
 			return null;
         }
     }
 
-	private static Property standardProperty(Class<?> clazz, String name, int flags) {
+	private static Property getEncapsulatedProp(Class<?> clazz, String name, int flags) {
 		String propertyName = name.length() == 1
 				? name.toUpperCase()
 				: name.substring(0, 1).toUpperCase() + name.substring(1); // pascalCase(name)
@@ -113,24 +114,15 @@ public final class PropertyHelper {
 		}
 	}
 
-	private static void extractEncapsulatedProps(Class<?> clazz, int flags, List<Property> properties, Set<String> matchedNames) {
-		if (clazz.isRecord())
-			extractRecordProperties(clazz, flags, properties, matchedNames);
-		else
-			extractStandardProperties(clazz, flags, properties, matchedNames);
-	}
-
-    private static void extractRecordProperties(Class<?> clazz, int flags, List<Property> properties, Set<String> matchedNames) {
+	private static void extractRecordComponents(Class<?> clazz, List<Property> properties, Set<String> matchedNames) {
 		for (RecordComponent component : clazz.getRecordComponents()) {
 			Method accessor = component.getAccessor();
-			if (matchFlags(accessor, flags, clazz)) {
-				properties.add(new MethodProperty(accessor, null, true));
-				matchedNames.add(component.getName());
-			}
+			properties.add(new MethodProperty(accessor, null, true));
+			matchedNames.add(component.getName());
 		}
-    }
+	}
 
-	private static void extractStandardProperties(Class<?> clazz, int flags, List<Property> properties, Set<String> matchedNames) {
+	private static void extractEncapsulatedProps(Class<?> clazz, int flags, List<Property> properties, Set<String> matchedNames) {
 		for (Method method : clazz.getMethods()) {
 			if (matchFlags(method, flags, clazz)) {
 				if (isGetter(method)) {
@@ -140,7 +132,7 @@ public final class PropertyHelper {
 				}
 			}
 		}
-    }
+	}
 
 	private static boolean isGetter(Method method) {
 		String methodName = method.getName();
@@ -167,7 +159,7 @@ public final class PropertyHelper {
 			
 			try {
 				setter = clazz.getMethod(setterName, getter.getReturnType());
-			} catch (NoSuchMethodException | SecurityException e) {
+			} catch (NoSuchMethodException | SecurityException ignored) {
 			} finally {
 				properties.add(new MethodProperty(getter, setter, false));
 				matchedNames.add(propName);
@@ -191,7 +183,7 @@ public final class PropertyHelper {
 		        } catch (NoSuchMethodException | SecurityException e2) {
 		            try {
 		                tmpGetter = clazz.getMethod("has" + propName);
-		            } catch (NoSuchMethodException | SecurityException e3) {
+		            } catch (NoSuchMethodException | SecurityException ignored) {
 		            }
 		        } finally {
 		            if (tmpGetter != null && tmpGetter.getReturnType() == Boolean.TYPE)
@@ -208,7 +200,7 @@ public final class PropertyHelper {
 		try {
 			Field field = clazz.getField(name);
 			if (matchFlags(field, flags, clazz)) return field;
-		} catch (NoSuchFieldException | SecurityException e) {
+		} catch (NoSuchFieldException | SecurityException ignored) {
 		}
 		
 		return null;
@@ -227,7 +219,7 @@ public final class PropertyHelper {
 		    } catch (NoSuchMethodException | SecurityException e2) {
 		        try {
 		            tmpGetter = clazz.getMethod("has" + propertyName);
-		        } catch (NoSuchMethodException | SecurityException e3) {
+		        } catch (NoSuchMethodException | SecurityException ignored) {
 		        }
 		    } finally {
 		        if (tmpGetter != null && tmpGetter.getReturnType() == Boolean.TYPE)

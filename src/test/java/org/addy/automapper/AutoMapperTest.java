@@ -1,17 +1,15 @@
 package org.addy.automapper;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+
 class AutoMapperTest {
 	
-	static long timeEllapsed;
+	static long timeElapsed;
 	
 	Person p = new Person(
 			"Michel Mbem",
@@ -24,13 +22,13 @@ class AutoMapperTest {
 	
 	@BeforeAll
 	static void init() {
-		timeEllapsed = System.currentTimeMillis();
+		timeElapsed = System.currentTimeMillis();
 	}
 	
 	@AfterAll
-	static void conclude() {
-		timeEllapsed = System.currentTimeMillis() - timeEllapsed;
-		System.out.printf("Time ellapsed: %dms%n", timeEllapsed);
+	static void tearDown() {
+		timeElapsed = System.currentTimeMillis() - timeElapsed;
+		System.out.printf("Time elapsed: %dms%n", timeElapsed);
 	}
 	
 	@Test
@@ -44,6 +42,32 @@ class AutoMapperTest {
 		assertNotEquals(p.address, e.address);
 		assertThat(e.address).isNull();
 		assertEquals(p.occupation, e.getJobTitle());
+	}
+
+	@Test
+	void mapToRecordWorks() {
+		Patient p2 = mapper.map(p, Patient.class);
+
+		assertEquals(p.getName(), p2.name());
+		assertEquals(p.getAge(), p2.age());
+		assertEquals(p.getSex(), p2.sex());
+		assertEquals(p.address, p2.address());
+		assertEquals(0f, p2.weight());
+		assertFalse(p2.inpatient());
+	}
+
+	@Test
+	void mapFromRecordWorks() {
+		Patient p2 = new Patient(
+				"Jordan Daniel", 12, 'M',
+				"16 Sunset Avenue, Ottawa, ON, CAN", 46, false);
+		p = mapper.map(p2, Person.class);
+
+		assertEquals(p2.name(), p.getName());
+		assertEquals(p2.age(), p.getAge());
+		assertEquals(p2.sex(), p.getSex());
+		assertEquals(p2.address(), p.address);
+		assertThat(p.occupation).isNull();
 	}
 	
 	@Test
@@ -160,6 +184,8 @@ class AutoMapperTest {
 		}
 	}
 
+	record Patient(String name, int age, char sex, String address, float weight, boolean inpatient) {}
+
 	static class TestProfile extends Profile {
 		
 		public TestProfile() {
@@ -169,9 +195,11 @@ class AutoMapperTest {
 				.forMember("jobTitle", mapFrom("occupation"));
 			
 			createMap(Person.class, Person.class);
+			createMap(Person.class, Patient.class);
+			createMap(Patient.class, Person.class);
 			
 			createMap(Person.class, String.class)
-				.constructUsing(e -> e.getName());
+				.constructUsing(Person::getName);
 		}
 		
 	}

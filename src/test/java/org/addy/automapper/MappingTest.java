@@ -1,9 +1,8 @@
 package org.addy.automapper;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class MappingTest {
 	
@@ -18,10 +17,10 @@ class MappingTest {
 		
 		mapping.apply(p, e, null);
 		
-		assertEquals(e.getName(), p.getName());
-		assertEquals(e.getAge(), p.getAge());
+		assertEquals(p.getName(), e.getName());
+		assertEquals(p.getAge(), e.getAge());
 		assertEquals((byte) 1, e.getSex());
-		assertNotEquals(e.address, p.address);
+		assertNotEquals(p.address, e.address);
 	}
 
 	@Test
@@ -30,10 +29,12 @@ class MappingTest {
 		Mapping<Person, Patient> mapping = new Mapping<>(Person.class, Patient.class);
 		Patient p2 = mapping.construct(p1);
 
-		assertEquals(p2.name(), p1.getName());
-		assertEquals(p2.age(), p1.getAge());
-		assertEquals(p2.sex(), p1.getSex());
-		assertEquals(p2.address(), p1.address);
+		assertEquals(p1.getName(), p2.name());
+		assertEquals(p1.getAge(), p2.age());
+		assertEquals(p1.getSex(), p2.sex());
+		assertEquals(p1.address, p2.address());
+		assertEquals(0f, p2.weight());
+		assertFalse(p2.inpatient());
 	}
 	
 	
@@ -130,6 +131,6 @@ class MappingTest {
 		}
 	}
 
-	record Patient(String name, int age, char sex, String address) {}
+	record Patient(String name, int age, char sex, String address, float weight, boolean inpatient) {}
 
 }
