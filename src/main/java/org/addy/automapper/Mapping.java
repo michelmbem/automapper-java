@@ -43,6 +43,11 @@ public class Mapping<S, D> {
 		this.constructor = constructor;
 		return this;
 	}
+
+	public Mapping<S, D> convertCtorArgUsing(int position, ArgumentConverter<S> converter) {
+		constructor.bindArgumentConverter(position, converter);
+		return this;
+	}
 	
 	public Mapping<S, D> forAllMembers(MappingAction action) {
 		properties.clear();
@@ -81,6 +86,18 @@ public class Mapping<S, D> {
 		}
 		
 		throw new IllegalArgumentException(memberName);
+	}
+
+	public Mapping<S, D> ignoringAll(String firstMember, String... otherMembers) {
+		forMember(firstMember, Profile.ignore());
+
+		if (otherMembers != null) {
+			for (String otherMember : otherMembers) {
+				forMember(otherMember, Profile.ignore());
+			}
+		}
+
+		return this;
 	}
 	
 	public D construct(S src) {

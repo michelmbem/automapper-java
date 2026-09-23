@@ -7,6 +7,11 @@ public class CopyAction implements MappingAction {
 		
 		if (dp.getType().isAssignableFrom(sp.getType())) {
 			dp.setValue(d, value);
+		} else if (dp.getType().isPrimitive()) {
+			try {
+				dp.setValue(d, TypeHelper.convert(dp.getType(), value));
+			} catch (IllegalArgumentException ignored) {
+			}
 		} else if (c != null && c.canMap(sp.getType(), dp.getType())) {
 			dp.setValue(d, c.doMap(value, dp.getType()));
 		}

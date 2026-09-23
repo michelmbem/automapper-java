@@ -26,7 +26,8 @@ class MappingTest {
 	@Test
 	void constructWorksWithRecords() {
 		Person p1 = new Person("Daniel Mbem", 10, 'M', "2105 Rue Tupper, MTL, QC, CAN");
-		Mapping<Person, Patient> mapping = new Mapping<>(Person.class, Patient.class);
+		Mapping<Person, Patient> mapping = new Mapping<>(Person.class, Patient.class)
+				.convertCtorArgUsing(5, (v, o) -> true);
 		Patient p2 = mapping.construct(p1);
 
 		assertEquals(p1.getName(), p2.name());
@@ -34,7 +35,7 @@ class MappingTest {
 		assertEquals(p1.getSex(), p2.sex());
 		assertEquals(p1.address, p2.address());
 		assertEquals(0f, p2.weight());
-		assertFalse(p2.inpatient());
+		assertTrue(p2.inpatient());
 	}
 	
 	

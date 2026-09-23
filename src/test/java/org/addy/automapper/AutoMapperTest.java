@@ -59,7 +59,7 @@ class AutoMapperTest {
 	@Test
 	void mapFromRecordWorks() {
 		Patient p2 = new Patient(
-				"Jordan Daniel", 12, 'M',
+				"Jordan Daniel", (short)12, 'M',
 				"16 Sunset Avenue, Ottawa, ON, CAN", 46, false);
 		p = mapper.map(p2, Person.class);
 
@@ -184,7 +184,7 @@ class AutoMapperTest {
 		}
 	}
 
-	record Patient(String name, int age, char sex, String address, float weight, boolean inpatient) {}
+	record Patient(String name, short age, char sex, String address, float weight, boolean inpatient) {}
 
 	static class TestProfile extends Profile {
 		
@@ -193,7 +193,7 @@ class AutoMapperTest {
 				.forMember("address", ignore())
 				.forMember("sex", convertUsing(v -> (byte) (v.equals('M') ? 1 : 0)))
 				.forMember("jobTitle", mapFrom("occupation"));
-			
+
 			createMap(Person.class, Person.class);
 			createMap(Person.class, Patient.class);
 			createMap(Patient.class, Person.class);
