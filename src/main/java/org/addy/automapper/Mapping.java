@@ -88,8 +88,21 @@ public class Mapping<S, D> {
 		throw new IllegalArgumentException(memberName);
 	}
 
-	public Mapping<S, D> ignoringAll(String firstMember, String... otherMembers) {
+	public Mapping<S, D> including(String firstMember, String... otherMembers) {
+		forMember(firstMember, Profile.mapFrom(firstMember));
+
+		if (otherMembers != null) {
+			for (String otherMember : otherMembers) {
+				forMember(otherMember, Profile.mapFrom(otherMember));
+			}
+		}
+
+		return this;
+	}
+
+	public Mapping<S, D> ignoringAll(String firstMember, String secondMember, String... otherMembers) {
 		forMember(firstMember, Profile.ignore());
+		forMember(secondMember, Profile.ignore());
 
 		if (otherMembers != null) {
 			for (String otherMember : otherMembers) {
