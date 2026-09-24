@@ -5,11 +5,11 @@ public class CopyAction implements MappingAction {
 	public static void copyValue(Object s, Property sp, Object d, Property dp, MappingContext c) {
 		Object value = sp.getValue(s);
 		
-		if (dp.getType().isAssignableFrom(sp.getType())) {
+		if (TypeHelper.isAssignable(sp.getType(), dp.getType())) {
 			dp.setValue(d, value);
 		} else if (dp.getType().isPrimitive()) {
 			try {
-				dp.setValue(d, TypeHelper.convert(dp.getType(), value));
+				dp.setValue(d, TypeHelper.convertTo(dp.getType(), value));
 			} catch (IllegalArgumentException ignored) {
 			}
 		} else if (c != null && c.canMap(sp.getType(), dp.getType())) {

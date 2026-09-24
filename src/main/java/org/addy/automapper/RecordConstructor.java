@@ -33,9 +33,9 @@ public class RecordConstructor<S, D> implements Constructor<S, D> {
 				arguments[i] = argumentTypes[i].isPrimitive() ? TypeHelper.defaultValue(argumentTypes[i]) : null;
 			} else {
                 Object value = sourceProperties[i].getValue(src);
-                arguments[i] = argumentTypes[i].isPrimitive() && !argumentTypes[i].isAssignableFrom(value.getClass())
-						? TypeHelper.convert(argumentTypes[i], value)
-						: value;
+                arguments[i] = value == null || TypeHelper.isAssignable(value.getClass(), argumentTypes[i])
+						? value
+						: TypeHelper.convertTo(argumentTypes[i], value);
 			}
 
 			if (argumentConverters.containsKey(i)) {
