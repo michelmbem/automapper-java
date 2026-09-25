@@ -14,8 +14,8 @@ public interface Property {
 	
 	default boolean isCollection() {
 		Class<?> type = getType();
-		return Collection.class.isAssignableFrom(type) ||
-				Map.class.isAssignableFrom(type);
+		return Collection.class.isAssignableFrom(type)
+				|| Map.class.isAssignableFrom(type);
 	}
 
 }

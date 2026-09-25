@@ -30,7 +30,6 @@ public class Mapping<S, D> {
 		for (Property destProp : destProps) {
 			if (destProp.isWritable() && !destProp.isCollection()) {
 				Property srcProp = PropertyHelper.getProperty(sourceClass, destProp.getName(), FLAGS);
-				
 				if (srcProp != null && srcProp.isReadable()) {
 					properties.add(new Couple<>(srcProp, destProp));
 					propertyActions.put(destProp.getName(), defaultAction);
@@ -76,7 +75,6 @@ public class Mapping<S, D> {
 		}
 
 		Property destProp = PropertyHelper.getProperty(destClass, memberName, FLAGS);
-		
 		if (destProp != null && destProp.isWritable()) {
 			Property srcProp = PropertyHelper.getProperty(sourceClass, memberName, FLAGS);
 			if (srcProp == null || !srcProp.isReadable()) srcProp = new EmptyProperty();

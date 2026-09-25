@@ -45,7 +45,9 @@ class PropertyHelperTest {
 
 	@Test
 	void getPropertiesWorks() {
-		final int flags = PropertyHelper.DECLARED | PropertyHelper.INSTANCE | PropertyHelper.FIELD | PropertyHelper.ENCAPSULATED;
+		final int flags = PropertyHelper.DECLARED | PropertyHelper.INSTANCE
+				| PropertyHelper.FIELD | PropertyHelper.ENCAPSULATED;
+
 		List<Property> properties = PropertyHelper.getProperties(Person.class, flags);
 
 		// There is an additional property introduced by the getClass method
@@ -63,7 +65,7 @@ class PropertyHelperTest {
 				.filter(p -> p.getName().equals("age"))
 				.findFirst().orElse(null);
 		assertInstanceOf(MethodProperty.class, age);
-		assertEquals(Integer.TYPE, age.getType());
+		assertEquals(int.class, age.getType());
 		assertTrue(age.isReadable());
 		assertTrue(age.isWritable());
 
@@ -71,7 +73,7 @@ class PropertyHelperTest {
 				.filter(p -> p.getName().equals("sex"))
 				.findFirst().orElse(null);
 		assertInstanceOf(MethodProperty.class, sex);
-		assertEquals(Character.TYPE, sex.getType());
+		assertEquals(char.class, sex.getType());
 		assertTrue(sex.isReadable());
 		assertTrue(sex.isWritable());
 
