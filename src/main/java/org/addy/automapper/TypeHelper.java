@@ -98,27 +98,24 @@ public final class TypeHelper {
         if (sourceType == null || targetType == null) throw new NullPointerException();
         if (sourceType == targetType) return true;
 
-        // Normal reference assignment
-        if (!(sourceType.isPrimitive() || targetType.isPrimitive())) {
-            return targetType.isAssignableFrom(sourceType);
+        if (sourceType.isPrimitive()) {
+            // Primitive -> primitive : check widening conversion
+            if (targetType.isPrimitive())
+                return isPrimitiveWideningConvertible(sourceType, targetType);
+
+            // Primitive -> reference : check auto-boxing
+            Class<?> boxed = PRIMITIVE_TO_WRAPPER.get(sourceType);
+            return boxed != null && targetType.isAssignableFrom(boxed);
         }
 
-        // Both primitive
-        if (sourceType.isPrimitive() && targetType.isPrimitive()) {
-            return isPrimitiveWideningConvertible(sourceType, targetType);
-        }
-
-        // Reference -> primitive: unboxing + optional primitive widening
-        if (!sourceType.isPrimitive()) {
+        // Reference -> primitive : check auto-unboxing and widening conversion
+        if (targetType.isPrimitive()) {
             Class<?> unboxed = WRAPPER_TO_PRIMITIVE.get(sourceType);
-            if (unboxed == null) return false;
-            return isPrimitiveWideningConvertible(unboxed, targetType);
+            return unboxed != null && isPrimitiveWideningConvertible(unboxed, targetType);
         }
 
-        // Primitive -> reference: boxing + reference widening
-        Class<?> boxed = PRIMITIVE_TO_WRAPPER.get(sourceType);
-        if (boxed == null) return false;
-        return targetType.isAssignableFrom(boxed);
+        // Reference -> reference : use Class::isAssignableFrom
+        return targetType.isAssignableFrom(sourceType);
     }
 
     public static Object defaultValue(Class<?> primitiveType) {

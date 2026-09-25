@@ -53,55 +53,39 @@ public class Profile {
 	public static MappingAction mapFrom(String propName) {
 		return (src, srcProp, dest, destProp, ctx) -> {
 			Property prop = resolveProperty(src.getClass(), propName);
-			if (prop == null) {
-				throw new IllegalArgumentException("There is no " + propName + " property in class " + src.getClass().getName());
-			}
-			
+			if (prop == null) throw new IllegalArgumentException(
+					"There is no " + propName + " property in class " + src.getClass().getName());
 			CopyAction.copyValue(src, prop, dest, destProp, ctx);
 		};
 	}
 
 	public static MappingAction mapTo(Class<?> targetClass) {
-		return (src, srcProp, dest, destProp, ctx) -> {
-			destProp.setValue(dest, ctx.doMap(srcProp.getValue(src), targetClass));
-		};
+		return (src, srcProp, dest, destProp, ctx) ->
+				destProp.setValue(dest, ctx.doMap(srcProp.getValue(src), targetClass));
 	}
 	
 	public static <T, U> MappingAction convertUsing(Converter<T, U> converter) {
-		return (src, srcProp, dest, destProp, ctx) -> {
-			destProp.setValue(dest, converter.convert((T) srcProp.getValue(src)));
-		};
+		return (src, srcProp, dest, destProp, ctx) ->
+				destProp.setValue(dest, converter.convert((T) srcProp.getValue(src)));
 	}
 
 	public static <T, U> MappingAction convertFromUsing(String propName, Converter<T, U> converter) {
 		return (src, srcProp, dest, destProp, ctx) -> {
 			Property prop = resolveProperty(src.getClass(), propName);
-			if (prop == null) {
-				throw new IllegalArgumentException("There is no " + propName + " property in class " + src.getClass().getName());
-			}
-
+			if (prop == null) throw new IllegalArgumentException(
+					"There is no " + propName + " property in class " + src.getClass().getName());
 			destProp.setValue(dest, converter.convert((T) prop.getValue(src)));
 		};
 	}
 
 	public static <T, U> MappingAction generateUsing(Converter<T, U> converter) {
-		return (src, srcProp, dest, destProp, ctx) -> {
-			destProp.setValue(dest, converter.convert((T) src));
-		};
+		return (src, srcProp, dest, destProp, ctx) ->
+				destProp.setValue(dest, converter.convert((T) src));
 	}
 	
 	private static Property resolveProperty(Class<?> clazz, String propName) {
-		Couple<Class<?>, String> key = new Couple<>(clazz, propName);
-		Property prop;
-		
-		if (propertyCache.containsKey(key)) {
-			prop = propertyCache.get(key);
-		} else {
-			prop = PropertyHelper.getProperty(clazz, propName, Mapping.FLAGS);
-			propertyCache.put(key, prop);
-		}
-		
-		return prop;
+		return propertyCache.computeIfAbsent(new Couple<>(clazz, propName),
+				key -> PropertyHelper.getProperty(clazz, propName, Mapping.FLAGS));
 	}
 
 }

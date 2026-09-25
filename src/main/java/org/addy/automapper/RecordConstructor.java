@@ -27,20 +27,8 @@ public class RecordConstructor<S, D> implements Constructor<S, D> {
 	@Override
 	public D invoke(S src) {
 		var arguments = new Object[argumentTypes.length];
-
 		for (int i = 0; i < arguments.length; ++i) {
-			if (sourceProperties[i] == null) {
-				arguments[i] = argumentTypes[i].isPrimitive() ? TypeHelper.defaultValue(argumentTypes[i]) : null;
-			} else {
-                Object value = sourceProperties[i].getValue(src);
-                arguments[i] = value == null || TypeHelper.isAssignable(value.getClass(), argumentTypes[i])
-						? value
-						: TypeHelper.convertTo(argumentTypes[i], value);
-			}
-
-			if (argumentConverters.containsKey(i)) {
-				arguments[i] = argumentConverters.get(i).convertArgument(arguments[i], src);
-			}
+			arguments[i] = argumentValue(src, sourceProperties[i], argumentTypes[i], i);
 		}
 
 		try {
@@ -53,6 +41,27 @@ public class RecordConstructor<S, D> implements Constructor<S, D> {
 	@Override
 	public void bindArgumentConverter(int argumentPosition, ArgumentConverter<S> converter) {
 		argumentConverters.put(argumentPosition, converter);
+	}
+
+	private Object argumentValue(S src, Property srcProp, Class<?> argType, int position) {
+		Object argValue;
+
+		if (srcProp == null) {
+			argValue = argType.isPrimitive() ? TypeHelper.defaultValue(argType) : null;
+		} else {
+			Object value = srcProp.getValue(src);
+			if (value == null)
+				argValue = argType.isPrimitive() ? TypeHelper.defaultValue(argType) : null;
+			else if (TypeHelper.isAssignable(value.getClass(), argType))
+				argValue = value;
+			else
+				argValue = TypeHelper.convertTo(argType, value);
+		}
+
+		if (argumentConverters.containsKey(position))
+			argValue = argumentConverters.get(position).convertArgument(argValue, src);
+
+		return argValue;
 	}
 
 }
