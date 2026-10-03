@@ -94,8 +94,14 @@ public final class TypeHelper {
     private TypeHelper() {
     }
 
+    public static Object defaultValue(Class<?> primitiveType) {
+        return Array.get(Array.newInstance(primitiveType, 1), 0);
+    }
+
     public static boolean isAssignable(Class<?> sourceType, Class<?> targetType) {
-        if (sourceType == null || targetType == null) throw new NullPointerException();
+        if (sourceType == null || targetType == null)
+            throw new IllegalArgumentException("both types should be non-null");
+
         if (sourceType == targetType) return true;
 
         if (sourceType.isPrimitive()) {
@@ -116,10 +122,6 @@ public final class TypeHelper {
 
         // Reference -> reference : use Class::isAssignableFrom
         return targetType.isAssignableFrom(sourceType);
-    }
-
-    public static Object defaultValue(Class<?> primitiveType) {
-        return Array.get(Array.newInstance(primitiveType, 1), 0);
     }
 
     public static Object convertTo(Class<?> targetType, Object value) {
