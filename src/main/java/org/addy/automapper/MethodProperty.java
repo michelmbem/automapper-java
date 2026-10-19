@@ -8,20 +8,13 @@ public class MethodProperty implements Property {
 	private final Method getter;
 	private final Method setter;
 
-	public MethodProperty(Method getter, Method setter) {
-		if (getter == null && setter == null) throw new NullPointerException();
+	public MethodProperty(String name, Method getter, Method setter) {
+		if (getter == null && setter == null)
+			throw new IllegalArgumentException("Both getter and setter cannot be null");
 
-		name = MethodHelper.toPropertyName(getter != null ? getter.getName() : setter.getName());
+		this.name = name;
 		this.getter = getter;
 		this.setter = setter;
-	}
-
-	public MethodProperty(Method accessor) {
-		if (accessor == null) throw new NullPointerException();
-
-		name = accessor.getName();
-		getter = accessor;
-		setter = null;
 	}
 
 	public Method getGetter() {
