@@ -12,8 +12,7 @@ public final class MethodHelper {
         Class<?> returnType = method.getReturnType();
         return method.getParameterCount() == 0
                 && ((methodName.startsWith("get") && methodName.length() > 3 && returnType != void.class)
-                || (methodName.startsWith("is") && methodName.length() > 2 && returnType == boolean.class)
-                || (methodName.startsWith("has") && methodName.length() > 3 && returnType == boolean.class));
+                || (methodName.startsWith("is") && methodName.length() > 2 && returnType == boolean.class));
     }
 
     public static boolean isSetter(Method method) {
