@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public final class PropertyHelper {
 	
@@ -159,14 +160,14 @@ public final class PropertyHelper {
 		return null;
 	}
 
-	private static Method findGetter(Class<?> clazz, String propertyName) {
+	private static Method findGetter(Class<?> clazz, String capitalName) {
 		Method getter = null;
 		
 		try {
-		    getter = clazz.getMethod("get" + propertyName);
+		    getter = clazz.getMethod("get" + capitalName);
 		} catch (NoSuchMethodException | SecurityException e) {
 		    try {
-				Method m = clazz.getMethod("is" + propertyName);
+				Method m = clazz.getMethod("is" + capitalName);
 				if (m.getReturnType() == boolean.class) getter = m;
 		    } catch (NoSuchMethodException | SecurityException ignored) {
 		    }
@@ -175,7 +176,7 @@ public final class PropertyHelper {
 		return getter;
 	}
 
-	private static Method findSetter(Class<?> clazz, String propertyName, Method getter) {
+	private static Method findSetter(Class<?> clazz, String capitalName, Method getter) {
 		Method setter = null;
 		
 		if (getter != null) {
@@ -185,14 +186,12 @@ public final class PropertyHelper {
 			} catch (NoSuchMethodException | SecurityException ignored) {
 			}
 		} else {
-			for (Method method : clazz.getMethods()) {
-				if (method.getParameterCount() == 1
-						&& method.getReturnType() == void.class
-						&& method.getName().equals("set" + propertyName)) {
-					setter = method;
-					break;
-				}
-			}
+			setter = Stream.of(clazz.getMethods())
+					.filter(m -> m.getParameterCount() == 1
+							&& m.getReturnType() == void.class
+							&& m.getName().equals("set" + capitalName))
+					.findFirst()
+					.orElse(null);
 		}
 		
 		return setter;
