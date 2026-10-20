@@ -10,18 +10,15 @@ public class AutoMapper implements MappingContext {
 	private final Profile profile;
 	
 	public AutoMapper(Profile profile) {
-		if (profile == null) throw new NullPointerException();
-		this.profile = profile;
+		this.profile = Objects.requireNonNull(profile);
 	}
 
 	@SuppressWarnings("unchecked")
 	public <S, D> void map(S src, D dest) {
 		var mapping = (Mapping<S, D>) profile.getMap(src.getClass(), dest.getClass());
-		if (mapping == null) {
-			throw new IllegalStateException("No mapping found for " +
-					src.getClass().getName() + " and " + dest.getClass().getName());
-		}
-		
+		Objects.requireNonNull(mapping, "No mapping found for " +
+				src.getClass().getName() + " and " + dest.getClass().getName());
+
 		mapping.apply(src, dest, this);
 	}
 
@@ -30,10 +27,8 @@ public class AutoMapper implements MappingContext {
 		if (src == null) return null;
 
 		var mapping = (Mapping<S, D>) profile.getMap(src.getClass(), destClass);
-		if (mapping == null) {
-			throw new IllegalStateException("No mapping found for " +
-					src.getClass().getName() + " and " + destClass.getName());
-		}
+		Objects.requireNonNull(mapping, "No mapping found for " +
+				src.getClass().getName() + " and " + destClass.getName());
 		
 		D dest = mapping.construct(src);
 		mapping.apply(src, dest, this);

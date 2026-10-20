@@ -10,7 +10,7 @@ class PropertyHelperTest {
 	
 	@Test
 	void getPropertyWorks() {
-		Person p = new Person("Michel Mbem", 17, 'M', "2105 Rue Tupper, MTL, QC, CAN");
+		Person p = new Person("Michel Mbem", 17, 'M', "Rue Tupper, MTL, QC, CAN");
 		Property name = PropertyHelper.getProperty(Person.class, "name",
 				PropertyHelper.DECLARED | PropertyHelper.INSTANCE | PropertyHelper.ENCAPSULATED);
 		Property age = PropertyHelper.getProperty(Person.class, "age",
@@ -23,7 +23,7 @@ class PropertyHelperTest {
 		age.setValue(p, 43);
 		assertEquals(43, p.getAge());
 		
-		assertEquals("2105 Rue Tupper, MTL, QC, CAN", address.getValue(p));
+		assertEquals("Rue Tupper, MTL, QC, CAN", address.getValue(p));
 		address.setValue(p, "115-2105 Rue Tupper, Montréal, Québec, Canada");
 		assertEquals("115-2105 Rue Tupper, Montréal, Québec, Canada", p.address);
 	}

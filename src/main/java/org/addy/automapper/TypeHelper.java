@@ -3,6 +3,7 @@ package org.addy.automapper;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 public final class TypeHelper {
@@ -95,12 +96,13 @@ public final class TypeHelper {
     }
 
     public static Object defaultValue(Class<?> primitiveType) {
+        Objects.requireNonNull(primitiveType);
         return Array.get(Array.newInstance(primitiveType, 1), 0);
     }
 
     public static boolean isAssignable(Class<?> sourceType, Class<?> targetType) {
-        if (sourceType == null || targetType == null)
-            throw new IllegalArgumentException("both types should be non-null");
+        Objects.requireNonNull(sourceType);
+        Objects.requireNonNull(targetType);
 
         if (sourceType == targetType) return true;
 
@@ -125,6 +127,8 @@ public final class TypeHelper {
     }
 
     public static Object convertTo(Class<?> targetType, Object value) {
+        Objects.requireNonNull(targetType);
+
         var couple = new Couple<>(value.getClass(), targetType);
         UnaryOperator<Object> converter = NARROWING_CONVERTERS.get(couple);
         if (converter != null) return converter.apply(value);

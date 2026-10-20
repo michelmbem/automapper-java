@@ -8,7 +8,7 @@ class MappingTest {
 	
 	@Test
 	void applyWorks() {
-		Person p = new Person("Jordan Mbem", 10, 'M', "2105 Rue Tupper, MTL, QC, CAN");
+		Person p = new Person("Jordan Mbem", 10, 'M', "Rue Tupper, MTL, QC, CAN");
 		Employee e = new Employee();
 		
 		Mapping<Person, Employee> mapping = new Mapping<>(Person.class, Employee.class)
@@ -25,7 +25,7 @@ class MappingTest {
 
 	@Test
 	void constructWorksWithRecords() {
-		Person p1 = new Person("Daniel Mbem", 10, 'M', "2105 Rue Tupper, MTL, QC, CAN");
+		Person p1 = new Person("Daniel Mbem", 10, 'M', "Rue Tupper, MTL, QC, CAN");
 		Mapping<Person, Patient> mapping = new Mapping<>(Person.class, Patient.class)
 				.convertCtorArgUsing(5, (v, o) -> true);
 		Patient p2 = mapping.construct(p1);

@@ -34,4 +34,24 @@ public final class NameHelper {
     public static String getSuffix(String name) {
         return name.substring(name.startsWith("is") ? 2 : 3);
     }
+
+    public static String requireNonEmpty(String value) {
+        if (value == null || value.isEmpty()) throw new IllegalArgumentException();
+        return value;
+    }
+
+    public static String requireNonEmpty(String value, String message) {
+        if (value == null || value.isEmpty()) throw new IllegalArgumentException(message);
+        return value;
+    }
+
+    public static String requireNonBlank(String value) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException();
+        return value;
+    }
+
+    public static String requireNonBlank(String value, String message) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException(message);
+        return value;
+    }
 }

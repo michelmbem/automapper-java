@@ -1,9 +1,6 @@
 package org.addy.automapper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Mapping<S, D> {
 	
@@ -23,23 +20,17 @@ public class Mapping<S, D> {
 		this.constructor = destClass.isRecord()
 				? new RecordConstructor<>(sourceClass, destClass)
 				: new DefaultConstructor<>(destClass);
-		
-		List<Property> destProps = PropertyHelper.getProperties(destClass, FLAGS);
+
 		MappingAction defaultAction = new CopyAction();
-		
-		for (Property destProp : destProps) {
-			if (destProp.isWritable() && !destProp.isCollection()) {
-				Property srcProp = PropertyHelper.getProperty(sourceClass, destProp.getName(), FLAGS);
-				if (srcProp != null && srcProp.isReadable()) {
-					properties.add(new Couple<>(srcProp, destProp));
-					propertyActions.put(destProp.getName(), defaultAction);
-				}
-			}
+
+		for (Property destProp : PropertyHelper.getProperties(destClass, FLAGS)) {
+			if (destProp.isWritable() && !destProp.isCollection())
+				bindAction(destProp, defaultAction);
 		}
 	}
 
 	public Mapping<S, D> constructUsing(Constructor<S, D> constructor) {
-		this.constructor = constructor;
+		this.constructor = Objects.requireNonNull(constructor);
 		return this;
 	}
 
@@ -52,21 +43,16 @@ public class Mapping<S, D> {
 		properties.clear();
 		propertyActions.clear();
 		
-		List<Property> destProps = PropertyHelper.getProperties(destClass, FLAGS);
-		
-		for (Property destProp : destProps) {
-			if (destProp.isWritable()) {
-				Property srcProp = PropertyHelper.getProperty(sourceClass, destProp.getName(), FLAGS);
-				if (srcProp == null || !srcProp.isReadable()) srcProp = new EmptyProperty();
-				properties.add(new Couple<>(srcProp, destProp));
-				propertyActions.put(destProp.getName(), action);
-			}
+		for (Property destProp : PropertyHelper.getProperties(destClass, FLAGS)) {
+			if (destProp.isWritable()) bindAction(destProp, action);
 		}
 		
 		return this;
 	}
 	
 	public Mapping<S, D> forMember(String memberName, MappingAction action) {
+		Objects.requireNonNull(action);
+
 		for (Couple<Property, Property> couple : properties) {
 			if (couple.second().getName().equals(memberName)) {
 				propertyActions.put(memberName, action);
@@ -76,10 +62,7 @@ public class Mapping<S, D> {
 
 		Property destProp = PropertyHelper.getProperty(destClass, memberName, FLAGS);
 		if (destProp != null && destProp.isWritable()) {
-			Property srcProp = PropertyHelper.getProperty(sourceClass, memberName, FLAGS);
-			if (srcProp == null || !srcProp.isReadable()) srcProp = new EmptyProperty();
-			properties.add(new Couple<>(srcProp, destProp));
-			propertyActions.put(memberName, action);
+			bindAction(destProp, action);
 			return this;
 		}
 		
@@ -120,6 +103,13 @@ public class Mapping<S, D> {
 			MappingAction action = propertyActions.get(couple.second().getName());
 			action.execute(src, couple.first(), dest, couple.second(), ctx);
 		}
+	}
+
+	private void bindAction(Property destProp, MappingAction action) {
+		Property srcProp = PropertyHelper.getProperty(sourceClass, destProp.getName(), FLAGS);
+		if (srcProp == null || !srcProp.isReadable()) srcProp = new EmptyProperty();
+		properties.add(new Couple<>(srcProp, destProp));
+		propertyActions.put(destProp.getName(), action);
 	}
 
 }

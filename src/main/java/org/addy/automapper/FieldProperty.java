@@ -2,16 +2,14 @@ package org.addy.automapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Objects;
 
 public class FieldProperty implements Property {
 	
 	private final Field field;
 
 	public FieldProperty(Field field) {
-		if (field == null)
-			throw new IllegalArgumentException("field cannot be null");
-		
-		this.field = field;
+		this.field = Objects.requireNonNull(field);
 	}
 	
 	public Field getField() {

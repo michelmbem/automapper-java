@@ -3,6 +3,7 @@ package org.addy.automapper;
 import java.lang.reflect.RecordComponent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class RecordConstructor<S, D> implements Constructor<S, D> {
@@ -13,14 +14,15 @@ public class RecordConstructor<S, D> implements Constructor<S, D> {
 	private final Map<Integer, ArgumentConverter<S>> argumentConverters = new HashMap<>();
 
 	public RecordConstructor(Class<S> sourceClass, Class<D> targetClass) {
-        this.targetClass = targetClass;
+		Objects.requireNonNull(sourceClass);
+        this.targetClass = Objects.requireNonNull(targetClass);
 
 		RecordComponent[] components = targetClass.getRecordComponents();
 		sourceProperties = Stream.of(components)
-				.map(component -> PropertyHelper.getProperty(sourceClass, component.getName()))
+				.map(comp -> PropertyHelper.getProperty(sourceClass, comp.getName()))
 				.toArray(Property[]::new);
 		argumentTypes = Stream.of(components)
-				.map(component -> component.getAccessor().getReturnType())
+				.map(comp -> comp.getAccessor().getReturnType())
 				.toArray(Class<?>[]::new);
 	}
 
@@ -40,7 +42,7 @@ public class RecordConstructor<S, D> implements Constructor<S, D> {
 
 	@Override
 	public void bindArgumentConverter(int argumentPosition, ArgumentConverter<S> converter) {
-		argumentConverters.put(argumentPosition, converter);
+		argumentConverters.put(argumentPosition, Objects.requireNonNull(converter));
 	}
 
 	private Object argumentValue(S src, Property srcProp, Class<?> argType, int position) {

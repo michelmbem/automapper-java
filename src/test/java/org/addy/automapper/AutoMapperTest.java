@@ -15,7 +15,7 @@ class AutoMapperTest {
 			"Michel Mbem",
 			43,
 			'M',
-			"2105 Rue Tupper, MTL, QC, CAN",
+			"Rue Tupper, MTL, QC, CAN",
 			"Computer Scientist");
 
 	AutoMapper mapper = new AutoMapper(new TestProfile());
@@ -87,6 +87,19 @@ class AutoMapperTest {
 		String s = mapper.map(p, String.class);
 		assertThat(s).isEqualTo(p.getName());
 	}
+
+	@Test
+	void mapInheritedTypesWorks() {
+		var s = new Student("Daniel Mbem", 12, 'M', "Rue Jorcan, Lévis, QC, CAN");
+		var e = mapper.map(s, Employee.class);
+
+		assertEquals(s.getName(), e.getName());
+		assertEquals(s.getAge(), e.getAge());
+		assertEquals((byte) 1, e.getSex());
+		assertNotEquals(s.address, e.address);
+		assertThat(e.address).isNull();
+		assertEquals(s.occupation, e.getJobTitle());
+	}
 	
 	
 	static class Person {
@@ -130,6 +143,12 @@ class AutoMapperTest {
 
 		public void setSex(char sex) {
 			this.sex = sex;
+		}
+	}
+
+	static class Student extends Person {
+		public Student(String name, int age, char sex, String address) {
+			super(name, age, sex, address, "Student");
 		}
 	}
 	
