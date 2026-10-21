@@ -12,7 +12,7 @@ public class MethodProperty implements Property {
 		if (getter == null && setter == null)
 			throw new IllegalArgumentException("Both getter and setter cannot be null");
 
-		this.name = name;
+		this.name = NameHelper.requireNonBlank(name);
 		this.getter = getter;
 		this.setter = setter;
 	}
@@ -27,7 +27,9 @@ public class MethodProperty implements Property {
 
 	@Override
 	public Class<?> getType() {
-		return getter != null ? getter.getReturnType() : setter.getParameterTypes()[0];
+		return getter != null
+				? getter.getReturnType()
+				: setter.getParameterTypes()[0];
 	}
 
 	@Override
