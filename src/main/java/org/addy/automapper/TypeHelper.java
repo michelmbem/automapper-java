@@ -128,6 +128,7 @@ public final class TypeHelper {
 
     public static Object convertTo(Class<?> targetType, Object value) {
         Objects.requireNonNull(targetType);
+        Objects.requireNonNull(value);
 
         var couple = new Couple<>(value.getClass(), targetType);
         UnaryOperator<Object> converter = NARROWING_CONVERTERS.get(couple);
