@@ -1,11 +1,13 @@
 package org.addy.automapper;
 
+import java.util.Objects;
+
 public class DefaultConstructor<S, D> implements Constructor<S, D> {
 	
 	private final Class<D> targetClass;
 	
 	public DefaultConstructor(Class<D> targetClass) {
-		this.targetClass = targetClass;
+		this.targetClass = Objects.requireNonNull(targetClass);
 	}
 
 	@Override
