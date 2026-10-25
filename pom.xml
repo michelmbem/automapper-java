@@ -8,11 +8,53 @@
 	<artifactId>automapper</artifactId>
 	<version>1.3.0</version>
 	<name>AutoMapper</name>
+	<description>A Java mapping library inspired by the .Net AutoMapper project</description>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<distribution>repo</distribution>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.html</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>michelmbem</id>
+			<name>Michel Mbem</name>
+			<email>michel.mbem@gmail.com</email>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>America/Toronto</timezone>
+			<properties>
+				<picUrl>https://avatars.githubusercontent.com/u/25884918?v=4</picUrl>
+			</properties>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>https://github.com/michelmbem/automapper-java.git</connection>
+		<tag>HEAD</tag>
+		<url>https://github.com/michelmbem/automapper-java</url>
+	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub Packages</name>
+			<url>https://maven.pkg.github.com/michelmbem/automapper-java</url>
+		</repository>
+		<snapshotRepository>
+			<id>github</id>
+			<name>GitHub Packages Snapshots</name>
+			<url>https://maven.pkg.github.com/michelmbem/automapper-java</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
+		<maven.compiler.release>17</maven.compiler.release>
 	</properties>
 
 	<dependencies>
